@@ -23,39 +23,81 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     gnupg \
     lsb-release \
+    openssh-client \
+    jq \
+    unzip \
     && rm -rf /var/lib/apt/lists/*
+
+# Install newer Node.js for better compatibility
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+    apt-get install -y nodejs
 
 # Create non-root user with limited privileges
 RUN useradd -m -s /bin/bash -u 1000 aiuser && \
     echo 'aiuser ALL=(ALL) NOPASSWD: /usr/bin/apt-get, /usr/bin/apt' >> /etc/sudoers.d/aiuser
 
-# Install code-server (VS Code in browser)
-RUN curl -fsSL https://code-server.dev/install.sh | sh
+# Install openvscode-server (official VS Code with marketplace access)
+RUN wget -O openvscode-server.tar.gz https://github.com/gitpod-io/openvscode-server/releases/download/openvscode-server-v1.84.2/openvscode-server-v1.84.2-linux-x64.tar.gz && \
+    tar -xzf openvscode-server.tar.gz && \
+    mv openvscode-server-v1.84.2-linux-x64 /opt/openvscode-server && \
+    rm openvscode-server.tar.gz && \
+    chown -R aiuser:aiuser /opt/openvscode-server
 
 # Create working directory and copy project files
 RUN mkdir -p /workspace && chown -R aiuser:aiuser /workspace
 
 # Copy project files to workspace (excluding storage)
 COPY --chown=aiuser:aiuser . /workspace/
-RUN rm -rf /workspace/storage /workspace/railway-credentials.txt
+RUN rm -rf /workspace/storage /workspace/railway-credentials.txt /workspace/.git
 
-# Copy entrypoint script
-COPY --chown=aiuser:aiuser railway-entrypoint.sh /home/aiuser/
+# Install Python development tools
+RUN pip3 install --no-cache-dir \
+    ipython \
+    black \
+    flake8 \
+    mypy \
+    pytest \
+    pytest-cov \
+    requests \
+    numpy \
+    pandas \
+    matplotlib \
+    poetry
+
+# Install global npm packages
+RUN npm install -g \
+    yarn \
+    typescript \
+    eslint \
+    prettier \
+    nodemon \
+    pm2
 
 # Switch to non-root user
 USER aiuser
 WORKDIR /workspace
 
-# Configure code-server with extensions support
-RUN mkdir -p ~/.config/code-server ~/.local/share/code-server/extensions
+# Copy extension installer script
+COPY --chown=aiuser:aiuser install-extensions.sh /home/aiuser/
+RUN chmod +x /home/aiuser/install-extensions.sh
 
-# Set up marketplace URLs
-ENV SERVICE_URL=https://open-vsx.org/vscode/gallery
-ENV ITEM_URL=https://open-vsx.org/vscode/item
+# Pre-install essential VS Code extensions from official marketplace
+RUN /home/aiuser/install-extensions.sh
+
+# Create startup script
+RUN echo '#!/bin/bash\n\
+export PASSWORD="${PASSWORD:-changeme}"\n\
+exec /opt/openvscode-server/bin/openvscode-server \
+  --host 0.0.0.0 \
+  --port ${PORT:-8080} \
+  --connection-token ${PASSWORD} \
+  --without-connection-token-prompt \
+  /workspace' > ~/start-vscode.sh && \
+chmod +x ~/start-vscode.sh
 
 # Railway uses PORT env variable
 EXPOSE 8080
 ENV PORT=8080
 
-# Use the custom entrypoint
-CMD ["/home/aiuser/railway-entrypoint.sh"]
+# Start openvscode-server
+CMD ["/home/aiuser/start-vscode.sh"]
