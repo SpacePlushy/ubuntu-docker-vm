@@ -1,0 +1,66 @@
+# Container Storage (This is the big one - ~184MB)
+storage/
+storage/*
+
+# Backup files
+backups/
+*.backup
+*.bak
+
+# PDF files (generated from markdown)
+*.pdf
+
+# Docker volumes
+volumes/
+*.img
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Thumbnails
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Python (if any scripts added later)
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+venv/
+ENV/
+
+# Node (if any added later)
+node_modules/
+npm-debug.log*
+
+# Environment variables
+.env
+.env.local
+
+# Archives
+*.tar
+*.tar.gz
+*.zip
+*.rar
+
+# Keep important directories with .gitkeep
+!scripts/
+!config/
