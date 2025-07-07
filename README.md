@@ -139,6 +139,16 @@ The storage uses a sparse file system. If you need more space:
 ./scripts/resize-volume.sh 40  # Resize to 40GB
 ```
 
+## Cloud Deployment (Railway)
+
+Deploy to the cloud with VS Code in browser:
+```bash
+./deploy-to-railway.sh
+```
+- Creates a cloud Ubuntu environment accessible from anywhere
+- Includes VS Code in browser (code-server)
+- Your password is saved in `railway-credentials.txt` (git-ignored)
+
 ## Storage Management
 
 The container storage grows dynamically as you add files:
