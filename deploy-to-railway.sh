@@ -37,10 +37,31 @@ fi
 
 # Login to Railway
 echo -e "${YELLOW}Logging into Railway...${NC}"
-echo -e "${BLUE}This will open your browser for authentication${NC}"
-railway login
 
-echo -e "\n${GREEN}✓ Logged into Railway${NC}\n"
+# Check if already logged in
+if railway whoami &> /dev/null; then
+    echo -e "${GREEN}✓ Already logged into Railway${NC}\n"
+else
+    echo -e "${BLUE}Choose login method:${NC}"
+    echo "1) Browser login (recommended)"
+    echo "2) Browserless login (if browser doesn't work)"
+    read -p "Enter choice (1 or 2): " choice
+    
+    case $choice in
+        2)
+            echo -e "${YELLOW}Using browserless login...${NC}"
+            railway login --browserless
+            ;;
+        *)
+            echo -e "${YELLOW}Opening browser for login...${NC}"
+            if ! railway login; then
+                echo -e "${RED}Browser login failed. Trying browserless login...${NC}"
+                railway login --browserless
+            fi
+            ;;
+    esac
+    echo -e "\n${GREEN}✓ Logged into Railway${NC}\n"
+fi
 
 # Create a secure password
 DEFAULT_PASSWORD=$(openssl rand -base64 12 2>/dev/null || echo "changeme-$(date +%s)")
