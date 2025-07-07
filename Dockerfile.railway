@@ -4,123 +4,44 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=UTC
 
-# Update and install essential packages (excluding Node.js for now)
+# Update and install only essential packages
 RUN apt-get update && apt-get install -y \
     curl \
     wget \
     git \
-    python3 \
-    python3-pip \
     build-essential \
     sudo \
-    vim \
-    nano \
-    htop \
-    net-tools \
-    iputils-ping \
     ca-certificates \
-    gnupg \
-    lsb-release \
-    openssh-client \
-    jq \
-    unzip \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Node.js 18.x and npm
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
-    apt-get install -y nodejs
+# Install ttyd (web terminal)
+RUN wget https://github.com/tsl0922/ttyd/releases/download/1.7.4/ttyd.x86_64 -O /usr/local/bin/ttyd && \
+    chmod +x /usr/local/bin/ttyd
 
-# Create non-root user with limited privileges
-RUN useradd -m -s /bin/bash -u 1000 aiuser && \
-    echo 'aiuser ALL=(ALL) NOPASSWD: /usr/bin/apt-get, /usr/bin/apt' >> /etc/sudoers.d/aiuser
+# Create non-root user
+RUN useradd -m -s /bin/bash -u 1000 ubuntu && \
+    echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
-# Install code-server
-RUN curl -fsSL https://code-server.dev/install.sh | sh
-
-# Create working directory and copy project files
-RUN mkdir -p /workspace && chown -R aiuser:aiuser /workspace
-
-# Copy project files to workspace (excluding storage)
-COPY --chown=aiuser:aiuser . /workspace/
-RUN rm -rf /workspace/storage /workspace/railway-credentials.txt /workspace/.git
-
-# Install Python development tools
-RUN pip3 install --no-cache-dir \
-    ipython \
-    black \
-    flake8 \
-    mypy \
-    pytest \
-    pytest-cov \
-    requests \
-    numpy \
-    pandas \
-    matplotlib \
-    poetry
-
-# Install global npm packages
-RUN npm install -g \
-    yarn \
-    typescript \
-    eslint \
-    prettier \
-    nodemon \
-    pm2
+# Create workspace directory
+RUN mkdir -p /home/ubuntu/workspace && chown -R ubuntu:ubuntu /home/ubuntu/workspace
 
 # Switch to non-root user
-USER aiuser
-WORKDIR /workspace
+USER ubuntu
+WORKDIR /home/ubuntu
 
-# Create code-server config directory
-RUN mkdir -p ~/.config/code-server ~/.local/share/code-server/extensions
-
-# Create startup script that generates a login link
+# Create startup script
 RUN echo '#!/bin/bash\n\
-# Set password from environment or use default\n\
-export PASSWORD="${PASSWORD:-changeme}"\n\
-export HASHED_PASSWORD=$(echo -n "${PASSWORD}" | sha256sum | cut -d" " -f1)\n\
-\n\
-# Configure code-server with hashed password\n\
-cat > ~/.config/code-server/config.yaml << EOF\n\
-bind-addr: 0.0.0.0:${PORT:-8080}\n\
-auth: password\n\
-hashed-password: "${HASHED_PASSWORD}"\n\
-cert: false\n\
-EOF\n\
-\n\
-echo "========================================"\n\
-echo "VS Code Server is starting..."\n\
-echo "========================================"\n\
-echo ""\n\
-echo "To access VS Code, use this URL:"\n\
-echo "https://YOUR-RAILWAY-URL/?password=${PASSWORD}"\n\
-echo ""\n\
-echo "Or if that does not work, try typing the password manually:"\n\
-echo "Password: ${PASSWORD}"\n\
-echo ""\n\
-echo "========================================"\n\
-\n\
-# Start code-server with open-vsx marketplace\n\
-exec code-server \
-  --extensions-dir ~/.local/share/code-server/extensions \
-  --disable-telemetry \
-  --disable-update-check \
-  --app-name "VS Code - Ubuntu Docker VM" \
-  /workspace' > ~/start-vscode.sh && \
-chmod +x ~/start-vscode.sh
-
-# Copy and run extension installer
-COPY --chown=aiuser:aiuser install-vsx-extensions.sh /home/aiuser/
-RUN chmod +x /home/aiuser/install-vsx-extensions.sh && \
-    /home/aiuser/install-vsx-extensions.sh || echo "Extensions will be installed on first run"
+echo "Starting web terminal..."\n\
+exec ttyd \
+  --port ${PORT:-8080} \
+  --credential ubuntu:${PASSWORD:-changeme} \
+  --writable \
+  bash' > ~/start.sh && \
+chmod +x ~/start.sh
 
 # Railway uses PORT env variable
 EXPOSE 8080
 ENV PORT=8080
 
-# Use Open VSX marketplace for extensions
-ENV SERVICE_URL=https://open-vsx.org/vscode/gallery
-ENV ITEM_URL=https://open-vsx.org/vscode/item
-
-# Start code-server
-CMD ["/home/aiuser/start-vscode.sh"]
+# Start ttyd web terminal
+CMD ["/home/ubuntu/start.sh"]
