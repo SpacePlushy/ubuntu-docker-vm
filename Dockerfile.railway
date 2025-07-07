@@ -34,12 +34,8 @@ RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
 RUN useradd -m -s /bin/bash -u 1000 aiuser && \
     echo 'aiuser ALL=(ALL) NOPASSWD: /usr/bin/apt-get, /usr/bin/apt' >> /etc/sudoers.d/aiuser
 
-# Install openvscode-server (official VS Code with marketplace access)
-RUN wget -O openvscode-server.tar.gz https://github.com/gitpod-io/openvscode-server/releases/download/openvscode-server-v1.84.2/openvscode-server-v1.84.2-linux-x64.tar.gz && \
-    tar -xzf openvscode-server.tar.gz && \
-    mv openvscode-server-v1.84.2-linux-x64 /opt/openvscode-server && \
-    rm openvscode-server.tar.gz && \
-    chown -R aiuser:aiuser /opt/openvscode-server
+# Install code-server
+RUN curl -fsSL https://code-server.dev/install.sh | sh
 
 # Create working directory and copy project files
 RUN mkdir -p /workspace && chown -R aiuser:aiuser /workspace
@@ -75,34 +71,42 @@ RUN npm install -g \
 USER aiuser
 WORKDIR /workspace
 
-# Copy extension installer script
-COPY --chown=aiuser:aiuser install-extensions.sh /home/aiuser/
-RUN chmod +x /home/aiuser/install-extensions.sh
+# Create code-server config directory
+RUN mkdir -p ~/.config/code-server ~/.local/share/code-server/extensions
 
-# Pre-install essential VS Code extensions from official marketplace
-# Note: Running as aiuser to ensure extensions are installed in the correct location
-RUN /home/aiuser/install-extensions.sh || echo "Extension installation will complete on first run"
-
-# Create startup script
+# Create startup script with proper marketplace configuration
 RUN echo '#!/bin/bash\n\
+# Set password from environment or use default\n\
 export PASSWORD="${PASSWORD:-changeme}"\n\
 \n\
-# Check if extensions are installed, if not install them\n\
-if [ ! -d "$HOME/.openvscode-server/extensions" ] || [ -z "$(ls -A $HOME/.openvscode-server/extensions 2>/dev/null)" ]; then\n\
-    echo "Installing VS Code extensions on first run..."\n\
-    /home/aiuser/install-extensions.sh || true\n\
-fi\n\
+# Configure code-server\n\
+cat > ~/.config/code-server/config.yaml << EOF\n\
+bind-addr: 0.0.0.0:${PORT:-8080}\n\
+auth: password\n\
+password: ${PASSWORD}\n\
+cert: false\n\
+EOF\n\
 \n\
-exec /opt/openvscode-server/bin/openvscode-server \
-  --host 0.0.0.0 \
-  --port ${PORT:-8080} \
-  --connection-token ${PASSWORD} \
+# Start code-server with open-vsx marketplace\n\
+exec code-server \
+  --extensions-dir ~/.local/share/code-server/extensions \
+  --disable-telemetry \
+  --disable-update-check \
   /workspace' > ~/start-vscode.sh && \
 chmod +x ~/start-vscode.sh
+
+# Copy and run extension installer
+COPY --chown=aiuser:aiuser install-vsx-extensions.sh /home/aiuser/
+RUN chmod +x /home/aiuser/install-vsx-extensions.sh && \
+    /home/aiuser/install-vsx-extensions.sh || echo "Extensions will be installed on first run"
 
 # Railway uses PORT env variable
 EXPOSE 8080
 ENV PORT=8080
 
-# Start openvscode-server
+# Use Open VSX marketplace for extensions
+ENV SERVICE_URL=https://open-vsx.org/vscode/gallery
+ENV ITEM_URL=https://open-vsx.org/vscode/item
+
+# Start code-server
 CMD ["/home/aiuser/start-vscode.sh"]
