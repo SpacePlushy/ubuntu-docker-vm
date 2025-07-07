@@ -1,15 +1,26 @@
-FROM lscr.io/linuxserver/webtop:ubuntu-mate
+FROM lscr.io/linuxserver/webtop:alpine-mate
 
-# Webtop provides a full Ubuntu MATE desktop environment
-# Perfect for iPad use with touch-friendly interface
+# Alpine MATE - Lighter weight and single port friendly
+# Perfect for Railway deployment with web access
 
-# The base image already includes:
-# - Ubuntu with MATE desktop
-# - Audio support
+ENV PUID=1000
+ENV PGID=1000
+ENV TZ=America/New_York
+ENV SUBFOLDER=/
+ENV TITLE="Ubuntu Desktop"
+
+# Configure for single port access on Railway
+ENV CUSTOM_PORT=${PORT:-8080}
+ENV WEB_PORT=${PORT:-8080}
+
+# The image includes:
+# - Alpine Linux with MATE desktop  
+# - Web-based VNC access (noVNC)
 # - Firefox browser
-# - File manager
-# - Terminal
-# - Basic utilities
+# - Terminal and file manager
+# - Audio passthrough support
 
-# Note: Additional software should be installed at runtime
-# or through the desktop's software center to persist properly
+# Expose only the web port that Railway expects
+EXPOSE 8080
+
+# Start command is already configured in base image
