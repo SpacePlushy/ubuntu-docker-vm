@@ -1,0 +1,64 @@
+services:
+  ubuntu-ai-vm:
+    build: .
+    container_name: ubuntu-ai-vm
+    hostname: ai-workspace
+    user: aiuser
+    working_dir: /workspace
+    
+    # Security settings
+    security_opt:
+      - no-new-privileges:false
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          memory: 1G
+    
+    # Network configuration
+    networks:
+      - ai-vm-network
+    
+    # Volume configuration
+    volumes:
+      - ubuntu-ai-vm-storage:/workspace
+      - type: tmpfs
+        target: /tmp
+        tmpfs:
+          size: 1G
+    
+    # Environment variables
+    environment:
+      - HOME=/workspace
+      - USER=aiuser
+    
+    # Keep container running
+    stdin_open: true
+    tty: true
+
+networks:
+  ai-vm-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+
+volumes:
+  ubuntu-ai-vm-storage:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/storage

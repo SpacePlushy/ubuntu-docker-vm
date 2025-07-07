@@ -1,0 +1,19 @@
+{
+  "security_policies": {
+    "filesystem": {
+      "no_host_mounts": true,
+      "readonly_root": false,
+      "allowed_paths": ["/workspace", "/tmp"]
+    },
+    "network": {
+      "allow_internet": true,
+      "blocked_ports": [],
+      "dns_servers": ["8.8.8.8", "8.8.4.4"]
+    },
+    "resources": {
+      "max_cpu": "2",
+      "max_memory": "4G",
+      "max_storage": "20G"
+    }
+  }
+}
