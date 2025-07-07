@@ -4,15 +4,13 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=UTC
 
-# Update and install essential packages
+# Update and install essential packages (excluding Node.js for now)
 RUN apt-get update && apt-get install -y \
     curl \
     wget \
     git \
     python3 \
     python3-pip \
-    nodejs \
-    npm \
     build-essential \
     sudo \
     vim \
@@ -28,7 +26,7 @@ RUN apt-get update && apt-get install -y \
     unzip \
     && rm -rf /var/lib/apt/lists/*
 
-# Install newer Node.js for better compatibility
+# Install Node.js 18.x and npm
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
     apt-get install -y nodejs
 
