@@ -82,11 +82,19 @@ COPY --chown=aiuser:aiuser install-extensions.sh /home/aiuser/
 RUN chmod +x /home/aiuser/install-extensions.sh
 
 # Pre-install essential VS Code extensions from official marketplace
-RUN /home/aiuser/install-extensions.sh
+# Note: Running as aiuser to ensure extensions are installed in the correct location
+RUN /home/aiuser/install-extensions.sh || echo "Extension installation will complete on first run"
 
 # Create startup script
 RUN echo '#!/bin/bash\n\
 export PASSWORD="${PASSWORD:-changeme}"\n\
+\n\
+# Check if extensions are installed, if not install them\n\
+if [ ! -d "$HOME/.openvscode-server/extensions" ] || [ -z "$(ls -A $HOME/.openvscode-server/extensions 2>/dev/null)" ]; then\n\
+    echo "Installing VS Code extensions on first run..."\n\
+    /home/aiuser/install-extensions.sh || true\n\
+fi\n\
+\n\
 exec /opt/openvscode-server/bin/openvscode-server \
   --host 0.0.0.0 \
   --port ${PORT:-8080} \

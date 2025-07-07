@@ -105,7 +105,7 @@ This updated setup uses **OpenVSCode Server** (by Gitpod) which provides:
 3. Click Install - it works instantly!
 
 ### Manual Extension Installation
-If you need to install extensions via terminal:
+The installer script uses the official CLI for robust extension management:
 ```bash
 # Run the installer script again
 ~/install-extensions.sh
@@ -113,7 +113,20 @@ If you need to install extensions via terminal:
 # Or install specific extension
 /opt/openvscode-server/bin/openvscode-server \
   --install-extension ms-python.python
+
+# List installed extensions
+/opt/openvscode-server/bin/openvscode-server --list-extensions
+
+# Update all extensions
+/opt/openvscode-server/bin/openvscode-server --update-extensions
 ```
+
+### How Extensions Are Installed
+The improved setup uses the official `openvscode-server` CLI instead of manual downloads:
+- ✅ Handles dependencies automatically
+- ✅ Manages version compatibility
+- ✅ Supports extension updates
+- ✅ More reliable installation process
 
 ## Benefits
 
