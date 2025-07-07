@@ -41,7 +41,7 @@ WORKDIR /workspace
 
 # Configure code-server
 RUN mkdir -p ~/.config/code-server
-RUN echo 'bind-addr: 0.0.0.0:8080\nauth: password\npassword: changeme\ncert: false' > ~/.config/code-server/config.yaml
+RUN echo 'bind-addr: 0.0.0.0:8080\nauth: password\npassword: mKNi0jSsnLzwwYPF\ncert: false' > ~/.config/code-server/config.yaml
 
 # Railway uses PORT env variable
 EXPOSE 8080
