@@ -45,9 +45,17 @@ This project sets up an isolated Ubuntu environment in a Docker container for de
 
 ## Documentation
 
-- **[USAGE_GUIDE.md](USAGE_GUIDE.md)** - Comprehensive usage guide with examples
-- **[INSTALLED_TOOLS.md](INSTALLED_TOOLS.md)** - Complete list of pre-installed development tools
+### Quick Start
+- **[QUICKSTART.md](QUICKSTART.md)** - 5-minute setup guide 🚀
+
+### Detailed Guides  
+- **[USAGE_GUIDE.md](USAGE_GUIDE.md)** - Comprehensive local usage guide
+- **[RAILWAY_GUIDE.md](RAILWAY_GUIDE.md)** - Cloud deployment with Railway
+- **[INSTALLED_TOOLS.md](INSTALLED_TOOLS.md)** - Complete list of pre-installed tools
+
+### Reference
 - **[PLAN.md](PLAN.md)** - Original implementation plan
+- **[cloud-setup.md](cloud-setup.md)** - Alternative cloud providers
 
 ## File Structure
 ```
