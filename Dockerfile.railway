@@ -1,47 +1,15 @@
-FROM ubuntu:22.04
+FROM lscr.io/linuxserver/webtop:ubuntu-mate
 
-# Prevent interactive prompts during package installation
-ENV DEBIAN_FRONTEND=noninteractive
-ENV TZ=UTC
+# Webtop provides a full Ubuntu MATE desktop environment
+# Perfect for iPad use with touch-friendly interface
 
-# Update and install only essential packages
-RUN apt-get update && apt-get install -y \
-    curl \
-    wget \
-    git \
-    build-essential \
-    sudo \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+# The base image already includes:
+# - Ubuntu with MATE desktop
+# - Audio support
+# - Firefox browser
+# - File manager
+# - Terminal
+# - Basic utilities
 
-# Install ttyd (web terminal)
-RUN wget https://github.com/tsl0922/ttyd/releases/download/1.7.4/ttyd.x86_64 -O /usr/local/bin/ttyd && \
-    chmod +x /usr/local/bin/ttyd
-
-# Create non-root user
-RUN useradd -m -s /bin/bash -u 1000 ubuntu && \
-    echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
-
-# Create workspace directory
-RUN mkdir -p /home/ubuntu/workspace && chown -R ubuntu:ubuntu /home/ubuntu/workspace
-
-# Switch to non-root user
-USER ubuntu
-WORKDIR /home/ubuntu
-
-# Create startup script
-RUN echo '#!/bin/bash\n\
-echo "Starting web terminal..."\n\
-exec ttyd \
-  --port ${PORT:-8080} \
-  --credential ubuntu:${PASSWORD:-changeme} \
-  --writable \
-  bash' > ~/start.sh && \
-chmod +x ~/start.sh
-
-# Railway uses PORT env variable
-EXPOSE 8080
-ENV PORT=8080
-
-# Start ttyd web terminal
-CMD ["/home/ubuntu/start.sh"]
+# Note: Additional software should be installed at runtime
+# or through the desktop's software center to persist properly
