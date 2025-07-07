@@ -1,0 +1,26 @@
+FROM lscr.io/linuxserver/webtop:alpine-mate
+
+# Alpine MATE - Lighter weight and single port friendly
+# Perfect for Railway deployment with web access
+
+ENV PUID=1000
+ENV PGID=1000
+ENV TZ=America/New_York
+ENV SUBFOLDER=/
+ENV TITLE="Ubuntu Desktop"
+
+# Configure for single port access on Railway
+ENV CUSTOM_PORT=${PORT:-8080}
+ENV WEB_PORT=${PORT:-8080}
+
+# The image includes:
+# - Alpine Linux with MATE desktop  
+# - Web-based VNC access (noVNC)
+# - Firefox browser
+# - Terminal and file manager
+# - Audio passthrough support
+
+# Expose only the web port that Railway expects
+EXPOSE 8080
+
+# Start command is already configured in base image
