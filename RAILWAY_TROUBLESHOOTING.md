@@ -1,5 +1,30 @@
 # Railway Troubleshooting Guide
 
+## Password Paste Issue - FIXED
+
+### Problem
+The code-server login page doesn't allow pasting passwords in some browsers.
+
+### Solutions
+1. **Use URL Parameter** (Recommended):
+   ```
+   https://your-railway-url.up.railway.app/?password=changeme
+   ```
+   This bypasses the login form entirely!
+
+2. **Type the password manually**:
+   - Password: `changeme` (or your custom password)
+
+3. **Use browser autofill**:
+   - Save the password in your browser
+   - Let browser autofill handle it
+
+### Setting Custom Password
+In Railway dashboard, add environment variable:
+```
+PASSWORD=your-secure-password
+```
+
 ## VS Code Extensions Not Loading - FIXED
 
 ### Problem

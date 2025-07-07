@@ -74,24 +74,38 @@ WORKDIR /workspace
 # Create code-server config directory
 RUN mkdir -p ~/.config/code-server ~/.local/share/code-server/extensions
 
-# Create startup script with proper marketplace configuration
+# Create startup script that generates a login link
 RUN echo '#!/bin/bash\n\
 # Set password from environment or use default\n\
 export PASSWORD="${PASSWORD:-changeme}"\n\
+export HASHED_PASSWORD=$(echo -n "${PASSWORD}" | sha256sum | cut -d" " -f1)\n\
 \n\
-# Configure code-server\n\
+# Configure code-server with hashed password\n\
 cat > ~/.config/code-server/config.yaml << EOF\n\
 bind-addr: 0.0.0.0:${PORT:-8080}\n\
 auth: password\n\
-password: ${PASSWORD}\n\
+hashed-password: "${HASHED_PASSWORD}"\n\
 cert: false\n\
 EOF\n\
+\n\
+echo "========================================"\n\
+echo "VS Code Server is starting..."\n\
+echo "========================================"\n\
+echo ""\n\
+echo "To access VS Code, use this URL:"\n\
+echo "https://YOUR-RAILWAY-URL/?password=${PASSWORD}"\n\
+echo ""\n\
+echo "Or if that does not work, try typing the password manually:"\n\
+echo "Password: ${PASSWORD}"\n\
+echo ""\n\
+echo "========================================"\n\
 \n\
 # Start code-server with open-vsx marketplace\n\
 exec code-server \
   --extensions-dir ~/.local/share/code-server/extensions \
   --disable-telemetry \
   --disable-update-check \
+  --app-name "VS Code - Ubuntu Docker VM" \
   /workspace' > ~/start-vscode.sh && \
 chmod +x ~/start-vscode.sh
 
