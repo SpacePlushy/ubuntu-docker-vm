@@ -1,33 +1,40 @@
 # Railway Troubleshooting Guide
 
-## VS Code Extensions Not Loading
+## VS Code Extensions Not Loading - FIXED
 
 ### Problem
 When searching for extensions in the Railway-deployed VS Code, you see "no extensions found".
 
 ### Solution Applied
-1. **Configured Open VSX Marketplace** - Added environment variables to use Open VSX instead of Microsoft marketplace
-2. **Fixed Extensions Directory** - Ensured proper permissions and directory structure
-3. **Added Custom Entrypoint** - Created `railway-entrypoint.sh` for proper initialization
-4. **Project Files Included** - Your project files are now copied to `/workspace` in the cloud
+We've switched from code-server to **OpenVSCode Server** which provides:
+1. **Full Microsoft Marketplace Access** - All official VS Code extensions available
+2. **Pre-installed Extensions** - 20 popular extensions installed during build
+3. **Pre-installed Dev Tools** - Python and Node.js tools ready to use
+4. **Robust Extension Management** - Using official CLI for installations
 
 ### Verification Steps
 1. Wait for deployment to complete (check Railway dashboard)
 2. Access your VS Code instance at your Railway URL
 3. Open Extensions panel (Ctrl+Shift+X or Cmd+Shift+X)
-4. Search for any extension (e.g., "Python", "GitLens")
-5. You should now see results from Open VSX marketplace
+4. You'll see pre-installed extensions already there
+5. Search for any extension - full Microsoft marketplace available
 
-### Installing Extensions
-1. Search for extensions in the marketplace
-2. Click "Install" on desired extensions
-3. Extensions persist between sessions
-4. Some popular extensions:
-   - Python
-   - GitLens
-   - Prettier
-   - ESLint
-   - Docker
+### Pre-installed Extensions
+- Python, Pylance, Jupyter
+- GitLens, Prettier, ESLint
+- Docker, GitHub Copilot
+- And 12 more popular extensions
+
+### Installing More Extensions
+```bash
+# Via UI: Just search and click install!
+
+# Via terminal:
+/opt/openvscode-server/bin/openvscode-server --install-extension <extension-id>
+
+# List installed:
+/opt/openvscode-server/bin/openvscode-server --list-extensions
+```
 
 ## Empty Workspace
 
